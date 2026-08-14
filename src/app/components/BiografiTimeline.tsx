@@ -23,16 +23,23 @@ const timelineData: TimelineItem[] = [
 {
   year: '2003',
   category: 'Pendidikan',
-  title: 'S1 Hukum — Universitas Sumatera Utara',
-  description: 'Lulus dengan predikat cum laude, aktif sebagai Ketua Senat Mahasiswa USU dan advokat mahasiswa.',
+  title: 'S1 Hukum — Universitas Indonesia',
+  description: 'Meraih gelar sarjana hukum dengan pemahaman kuat tentang sistem hukum, keadilan sosial, dan kebutuhan masyarakat.',
   icon: 'AcademicCapIcon'
 },
 {
   year: '2007',
-  category: 'Organisasi',
-  title: 'Direktur Lembaga Bantuan Hukum Sumut',
-  description: 'Mendirikan dan memimpin LBH yang memberikan layanan hukum gratis bagi masyarakat kurang mampu di 8 kabupaten.',
-  icon: 'ScaleIcon'
+  category: 'Pendidikan',
+  title: 'S2 Hukum — Universitas Indonesia',
+  description: 'Melanjutkan studi magister hukum untuk memperdalam wawasan hukum tata negara, hak masyarakat, dan kebijakan publik.',
+  icon: 'AcademicCapIcon'
+},
+{
+  year: '2026',
+  category: 'Pendidikan',
+  title: 'S3 Hukum — Universitas Indonesia',
+  description: 'Menuntaskan program doktor hukum dengan fokus pada penguatan sistem hukum dan tata kelola pemerintahan yang berpihak pada rakyat.',
+  icon: 'AcademicCapIcon'
 },
 {
   year: '2010',
@@ -98,7 +105,7 @@ export default function BiografiTimeline() {
             {/* Profile photo */}
             <div className="relative rounded-3xl overflow-hidden shadow-emerald-md">
               <AppImage
-                src="https://img.rocket.new/generatedImages/rocket_gen_img_12fc6cbe7-1772369417485.png"
+                src="/assets/images/caleg2.jpg"
                 alt="Professional man in formal suit, confident pose, bright well-lit office background"
                 width={480}
                 height={560}
@@ -109,7 +116,7 @@ export default function BiografiTimeline() {
                 style={{ background: 'linear-gradient(to top, rgba(15,23,42,0.8), transparent)' }} />
               
               <div className="absolute bottom-5 left-5 right-5">
-                <p className="text-white font-extrabold text-xl leading-tight">Ir. Ahmad Syahputra, S.H., M.H.</p>
+                <p className="text-white font-extrabold text-xl leading-tight">Pdt. Dr. Maruba Sinaga, S.H., M.H</p>
                 <p className="text-emerald-mid text-sm font-semibold mt-1">Calon Anggota DPD RI · Dapil Sumut</p>
               </div>
             </div>
@@ -118,15 +125,14 @@ export default function BiografiTimeline() {
             <div className="bg-card rounded-3xl p-6 border border-border space-y-4">
               <h3 className="font-extrabold text-foreground text-lg">Ringkasan Profil</h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Putra asli Sumatera Utara dengan pengalaman 15+ tahun di bidang advokasi hukum,
-                pemberdayaan masyarakat, dan kerukunan antar-suku. Menikah dengan 2 anak, berdomisili di Medan.
+                Tokoh hukum, pemimpin gereja, dan pejuang kebangsaan yang menempatkan keadilan, toleransi, serta pemberdayaan masyarakat sebagai inti perjuangan. Memiliki latar pendidikan hukum yang kuat dan pengalaman kepemimpinan nasional.
               </p>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                { label: 'Pendidikan', value: 'S2 Hukum USU' },
+                { label: 'Pendidikan', value: 'S1, S2, S3 Hukum UI' },
                 { label: 'Domisili', value: 'Medan, Sumut' },
-                { label: 'Agama', value: 'Islam' },
-                { label: 'Suku', value: 'Mandailing' }].
+                { label: 'Jabatan', value: 'Ketua Umum' },
+                { label: 'Organisasi', value: 'BKAG' }].
                 map((item) =>
                 <div key={item.label} className="bg-surface-container rounded-xl p-3">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{item.label}</p>

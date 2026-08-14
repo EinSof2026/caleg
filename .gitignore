@@ -35,3 +35,8 @@ jest-test-results.json
 
 # Optional: if using TurboRepo or monorepo
 turbo/
+.vercel
+
+# Environment / secrets (JANGAN commit file .env* ke git)
+.env*
+!.env.example

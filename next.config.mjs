@@ -1,4 +1,13 @@
 import { imageHosts } from './image-hosts.config.mjs';
+import withPWAInit from '@ducanh2912/next-pwa';
+
+// Konfigurasi PWA
+const withPWA = withPWAInit({
+  dest: 'public',
+  disable: process.env.NODE_ENV === 'development', // PWA mati di mode dev agar coding tidak terganggu cache
+  register: true,
+  skipWaiting: true, // Otomatis aktifkan versi PWA baru tanpa menunda
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -41,4 +50,6 @@ const nextConfig = {
     return config;
   },
 };
-export default nextConfig;
+
+// Bungkus nextConfig dengan withPWA
+export default withPWA(nextConfig);

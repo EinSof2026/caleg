@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Icon from '@/components/ui/AppIcon';
+import SumutMap from '@/app/components/SumutMap';
 
 type TabType = 'aspirasi' | 'relawan';
 
@@ -45,6 +46,9 @@ const initialRelawanData: RelawanData = {
   nama: '', kabupaten: '', whatsapp: '', email: '', motivasi: '',
 };
 
+// Link bot Telegram AI. Nilai asli diambil dari .env.local (NEXT_PUBLIC_TELEGRAM_BOT_URL).
+const TELEGRAM_BOT_URL = process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL || 'https://t.me/GANTI_DENGAN_USERNAME_BOT';
+
 export default function AspirasiForm() {
   const [activeTab, setActiveTab] = useState<TabType>('aspirasi');
   const [formData, setFormData] = useState<FormData>(initialFormData);
@@ -52,6 +56,7 @@ export default function AspirasiForm() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {};
@@ -70,11 +75,32 @@ export default function AspirasiForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (activeTab === 'aspirasi' && !validateForm()) return;
+
     setLoading(true);
-    // Mock submit - backend integration point
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setLoading(false);
-    setSubmitted(true);
+    setSubmitError(null);
+
+    try {
+      const payload = activeTab === 'aspirasi'
+        ? { jenis: 'aspirasi', data: formData }
+        : { jenis: 'relawan', data: relawanData };
+
+      const res = await fetch('/api/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => null);
+        throw new Error(errBody?.error || 'Terjadi kesalahan saat mengirim data.');
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Gagal mengirim data. Coba lagi nanti.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReset = () => {
@@ -82,6 +108,7 @@ export default function AspirasiForm() {
     setFormData(initialFormData);
     setRelawanData(initialRelawanData);
     setErrors({});
+    setSubmitError(null);
   };
 
   return (
@@ -103,15 +130,43 @@ export default function AspirasiForm() {
           </p>
         </div>
 
-        {/* Tab switcher */}
-        <div className="flex rounded-2xl bg-card border border-border p-1.5 mb-8 max-w-sm mx-auto">
+        {/* Chat dengan AI di Telegram */}
+        <div className="mb-8 flex flex-col sm:flex-row items-center justify-between gap-4 bg-card border border-emerald-mid/20 rounded-2xl px-6 py-5 shadow-emerald-sm">
+          <div className="flex items-center gap-3 text-center sm:text-left">
+            <div className="w-10 h-10 rounded-xl bg-emerald-pale flex items-center justify-center flex-shrink-0">
+              <Icon name="ChatBubbleLeftRightIcon" variant="solid" size={20} className="text-secondary" />
+            </div>
+            <div>
+              <p className="text-sm font-extrabold text-foreground">Lebih suka bercakap langsung?</p>
+              <p className="text-xs text-muted-foreground">Chat dengan AI asisten kami di Telegram, kapan saja.</p>
+            </div>
+          </div>
+          <a
+            href={TELEGRAM_BOT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn-pill bg-secondary text-white px-6 py-3 text-sm font-bold shadow-emerald-sm hover:bg-emerald-dark flex items-center gap-2 flex-shrink-0"
+          >
+            <Icon name="PaperAirplaneIcon" variant="solid" size={16} className="text-white" />
+            Hubungi AI Asisten
+          </a>
+        </div>
+
+        {/* Tab switcher dengan indikator geser smooth */}
+        <div className="relative flex rounded-2xl bg-card border border-border p-1.5 mb-8 max-w-sm mx-auto">
+          {/* Indikator background yang bergeser mengikuti tab aktif */}
+          <div
+            className={`absolute top-1.5 bottom-1.5 left-1.5 w-[calc(50%-6px)] rounded-xl bg-secondary shadow-emerald-sm transition-transform duration-300 ease-out ${
+              activeTab === 'relawan' ? 'translate-x-full' : 'translate-x-0'
+            }`}
+          />
           {(['aspirasi', 'relawan'] as TabType[]).map((tab) => (
             <button
               key={tab}
-              onClick={() => { setActiveTab(tab); setSubmitted(false); }}
-              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
+              onClick={() => { setActiveTab(tab); setSubmitted(false); setSubmitError(null); }}
+              className={`relative flex-1 py-3 rounded-xl text-sm font-bold transition-colors duration-300 ${
                 activeTab === tab
-                  ? 'bg-secondary text-white shadow-emerald-sm'
+                  ? 'text-white'
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
@@ -122,6 +177,7 @@ export default function AspirasiForm() {
 
         {/* Form card */}
         <div className="bg-card border border-border rounded-3xl p-6 sm:p-10 shadow-navy-sm">
+          <div key={activeTab} className="animate-fade-in-up">
           {submitted ? (
             /* Success state */
             <div className="text-center py-12 space-y-6">
@@ -133,13 +189,21 @@ export default function AspirasiForm() {
                   {activeTab === 'aspirasi' ? 'Aspirasi Terkirim!' : 'Pendaftaran Diterima!'}
                 </h3>
                 <p className="text-muted-foreground mt-2 leading-relaxed">
-                  {activeTab === 'aspirasi' ?'Terima kasih! Aspirasi Anda telah dicatat dalam basis data resmi. Tim kami akan menghubungi Anda via WhatsApp untuk konfirmasi.' :'Selamat bergabung sebagai relawan SuaraUtara! Tim koordinator akan menghubungi Anda via WhatsApp dalam 1×24 jam.'}
+                  {activeTab === 'aspirasi' ?'Terima kasih! Aspirasi Anda telah diteruskan ke tim kami.' :'Selamat bergabung sebagai relawan SuaraUtara! Tim koordinator akan menghubungi Anda untuk langkah selanjutnya.'}
                 </p>
               </div>
               <div className="flex items-center justify-center gap-3 bg-emerald-pale rounded-2xl px-6 py-4">
                 <Icon name="ChatBubbleLeftIcon" variant="solid" size={20} className="text-secondary" />
                 <p className="text-sm font-semibold text-secondary">
-                  Konfirmasi akan dikirim via WhatsApp
+                  Bincang lanjutan dengan AI kami di{' '}
+                  <a
+                    href={TELEGRAM_BOT_URL}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline hover:text-emerald-dark"
+                  >
+                    Telegram
+                  </a>
                 </p>
               </div>
               <button onClick={handleReset} className="btn-pill bg-secondary text-white px-8 py-3 text-sm font-bold hover:bg-emerald-dark">
@@ -149,6 +213,12 @@ export default function AspirasiForm() {
           ) : activeTab === 'aspirasi' ? (
             /* Aspirasi Form */
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+              {submitError && (
+                <div className="bg-red-light border border-accent/40 rounded-2xl px-4 py-3 flex items-start gap-3">
+                  <Icon name="ExclamationTriangleIcon" variant="solid" size={16} className="text-accent flex-shrink-0 mt-0.5" />
+                  <p className="text-sm font-medium text-accent">{submitError}</p>
+                </div>
+              )}
               <div className="grid sm:grid-cols-2 gap-5">
                 {/* Nama */}
                 <div className="space-y-1.5">
@@ -202,6 +272,13 @@ export default function AspirasiForm() {
                   />
                 </div>
               </div>
+
+              {/* Peta interaktif: klik wilayah untuk memilih Kabupaten/Kota */}
+              <SumutMap
+                selected={formData.kabupaten}
+                onSelect={(name) => setFormData({ ...formData, kabupaten: name })}
+                className="w-[calc(100%+48px)] -mx-6 sm:w-[calc(100%+80px)] sm:-mx-10"
+              />
 
               {/* Kategori */}
               <div className="space-y-1.5">
@@ -265,6 +342,12 @@ export default function AspirasiForm() {
           ) : (
             /* Relawan Form */
             <form onSubmit={handleSubmit} className="space-y-5">
+              {submitError && (
+                <div className="bg-red-light border border-accent/40 rounded-2xl px-4 py-3 flex items-start gap-3">
+                  <Icon name="ExclamationTriangleIcon" variant="solid" size={16} className="text-accent flex-shrink-0 mt-0.5" />
+                  <p className="text-sm font-medium text-accent">{submitError}</p>
+                </div>
+              )}
               {/* Info banner */}
               <div className="bg-emerald-pale border border-emerald-mid/20 rounded-2xl p-4 flex items-start gap-3">
                 <Icon name="InformationCircleIcon" variant="solid" size={18} className="text-secondary flex-shrink-0 mt-0.5" />
@@ -321,6 +404,13 @@ export default function AspirasiForm() {
                 </div>
               </div>
 
+              {/* Peta interaktif: klik wilayah untuk memilih Kabupaten/Kota */}
+              <SumutMap
+                selected={relawanData.kabupaten}
+                onSelect={(name) => setRelawanData({ ...relawanData, kabupaten: name })}
+                className="w-[calc(100%+48px)] -mx-6 sm:w-[calc(100%+80px)] sm:-mx-10"
+              />
+
               <div className="space-y-1.5">
                 <label className="text-sm font-bold text-foreground">Motivasi Bergabung</label>
                 <textarea
@@ -351,6 +441,7 @@ export default function AspirasiForm() {
               </button>
             </form>
           )}
+          </div>
         </div>
       </div>
     </section>

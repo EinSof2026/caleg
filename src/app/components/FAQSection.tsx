@@ -8,6 +8,9 @@ interface FAQItem {
   answer: string;
 }
 
+// Link bot Telegram AI. Nilai asli diambil dari .env.local (NEXT_PUBLIC_TELEGRAM_BOT_URL).
+const TELEGRAM_BOT_URL = process.env.NEXT_PUBLIC_TELEGRAM_BOT_URL || 'https://t.me/GANTI_DENGAN_USERNAME_BOT';
+
 const faqs: FAQItem[] = [
   {
     question: 'Mengapa memilih jalur DPD RI, bukan DPR atau partai politik?',
@@ -23,7 +26,7 @@ const faqs: FAQItem[] = [
   },
   {
     question: 'Bagaimana aspirasi warga yang dikirim melalui website ini ditindaklanjuti?',
-    answer: 'Setiap aspirasi masuk diverifikasi tim, dikelompokkan per daerah dan kategori, lalu dikompilasi menjadi dokumen kebijakan yang dibawa ke rapat DPD RI, kementerian terkait, dan sidang paripurna. Pengirim akan mendapat konfirmasi via WhatsApp dan update perkembangan tindak lanjutnya.',
+    answer: 'Setiap aspirasi masuk diverifikasi tim, dikelompokkan per daerah dan kategori, lalu dikompilasi menjadi dokumen kebijakan yang dibawa ke rapat DPD RI, kementerian terkait, dan sidang paripurna. Pengirim dapat bercakap dengan AI asisten kami di Telegram untuk konfirmasi dan update perkembangan tindak lanjutnya.',
   },
   {
     question: 'Bagaimana cara bergabung sebagai relawan dan apa yang akan dilakukan?',
@@ -125,17 +128,17 @@ export default function FAQSection() {
             </div>
             <h3 className="text-xl font-extrabold text-white">Masih ada pertanyaan?</h3>
             <p className="text-sm text-white/50 max-w-sm mx-auto">
-              Hubungi tim SuaraUtara langsung via WhatsApp atau sampaikan aspirasi Anda.
+              Bincang dengan AI asisten kami di Telegram atau sampaikan aspirasi Anda.
             </p>
             <div className="flex flex-wrap gap-3 justify-center">
               <a
-                href="https://wa.me/6281234567890"
+                href={TELEGRAM_BOT_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-pill bg-secondary text-white px-6 py-3 text-sm font-bold shadow-emerald-sm hover:bg-emerald-dark flex items-center gap-2"
               >
                 <Icon name="ChatBubbleOvalLeftIcon" variant="solid" size={16} className="text-white" />
-                Chat WhatsApp
+                Hubungi AI Asisten
               </a>
               <button
                 onClick={() => document.querySelector('#aspirasi')?.scrollIntoView({ behavior: 'smooth' })}

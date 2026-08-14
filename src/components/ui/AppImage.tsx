@@ -29,47 +29,95 @@ const AppImage = memo(function AppImage({
     height,
     className = '',
     priority = false,
-    quality = 75,
+    quality = 85,
     placeholder = 'empty',
     blurDataURL,
     fill = false,
     sizes,
     onClick,
-    fallbackSrc,
+    fallbackSrc = '/assets/images/no_image.png',
     loading = 'lazy',
     unoptimized = false,
     ...props
 }: AppImageProps) {
-    const [isError, setIsError] = useState(false);
+    const [imageSrc, setImageSrc] = useState(src);
+    const [isLoading, setIsLoading] = useState(true);
+    const [hasError, setHasError] = useState(false);
+
+    const isExternalUrl = useMemo(() => typeof imageSrc === 'string' && imageSrc.startsWith('http'), [imageSrc]);
+    const resolvedUnoptimized = unoptimized || isExternalUrl;
 
     const handleError = useCallback(() => {
-        setIsError(true);
+        if (!hasError && imageSrc !== fallbackSrc) {
+            setImageSrc(fallbackSrc);
+            setHasError(true);
+        }
+        setIsLoading(false);
+    }, [hasError, imageSrc, fallbackSrc]);
+
+    const handleLoad = useCallback(() => {
+        setIsLoading(false);
+        setHasError(false);
     }, []);
 
-    const imageSrc = useMemo(() => {
-        return isError && fallbackSrc ? fallbackSrc : src;
-    }, [isError, fallbackSrc, src]);
+    const imageClassName = useMemo(() => {
+        const classes = [className];
+        if (isLoading && !priority) classes.push('bg-gray-200');
+        if (onClick) classes.push('cursor-pointer hover:opacity-90 transition-opacity duration-200');
+        return classes.filter(Boolean).join(' ');
+    }, [className, isLoading, onClick, priority]);
+
+    const imageProps = useMemo(() => {
+        const baseProps: any = {
+            src: imageSrc,
+            alt,
+            className: imageClassName,
+            quality,
+            placeholder,
+            unoptimized: resolvedUnoptimized,
+            onError: handleError,
+            onLoad: handleLoad,
+            onClick,
+        };
+
+        if (priority) {
+            baseProps.priority = true;
+        } else {
+            baseProps.loading = loading;
+        }
+
+        if (blurDataURL && placeholder === 'blur') {
+            baseProps.blurDataURL = blurDataURL;
+        }
+
+        return baseProps;
+    }, [imageSrc, alt, imageClassName, quality, placeholder, blurDataURL, resolvedUnoptimized, priority, loading, handleError, handleLoad, onClick]);
+
+    if (fill) {
+        return (
+            <div className="relative" style={{ width: '100%', height: '100%' }}>
+                <Image
+                    {...imageProps}
+                    fill
+                    sizes={sizes || '(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'}
+                    style={{ objectFit: 'cover' }}
+                    {...props}
+                />
+            </div>
+        );
+    }
 
     return (
         <Image
-            src={imageSrc}
-            alt={alt}
-            width={width}
-            height={height}
-            className={className}
-            priority={priority}
-            quality={quality}
-            placeholder={placeholder}
-            blurDataURL={blurDataURL}
-            fill={fill}
+            {...imageProps}
+            width={width || 400}
+            height={height || 300}
             sizes={sizes}
-            loading={loading}
-            unoptimized={unoptimized}
-            onClick={onClick}
-            onError={handleError}
             {...props}
         />
     );
 });
+
+AppImage.displayName = 'AppImage';
 
 export default AppImage;

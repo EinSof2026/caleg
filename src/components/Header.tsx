@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import AppLogo from '@/components/ui/AppLogo';
+import AuthModal from '@/app/components/AuthModal';
 
 const navLinks = [
   { label: 'Beranda', href: '#hero' },
@@ -70,6 +71,7 @@ export default function Header() {
 
           {/* CTA */}
           <div className="flex items-center gap-3">
+            <AuthModal />
             <button
               onClick={() => handleNavClick('#aspirasi')}
               className="hidden sm:flex btn-pill bg-secondary text-secondary-foreground px-5 py-2.5 text-sm font-bold shadow-emerald-sm hover:bg-emerald-dark"

@@ -8,10 +8,12 @@ import BiografiTimeline from '@/app/components/BiografiTimeline';
 import PetaAspirasi from '@/app/components/PetaAspirasi';
 import AspirasiForm from '@/app/components/AspirasiForm';
 import FAQSection from '@/app/components/FAQSection';
+import AdminHashRedirect from '@/app/components/AdminHashRedirect';
 
 export default function HomePage() {
   return (
     <main className="overflow-x-hidden">
+      <AdminHashRedirect />
       <Header />
       <HeroSection />
       <StatsBar />

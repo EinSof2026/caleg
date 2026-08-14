@@ -1,12 +1,26 @@
 import React from 'react';
 import type { Metadata, Viewport } from 'next';
-import { Plus_Jakarta_Sans } from 'next/font/google';
-import './globals.css';
+import { Plus_Jakarta_Sans, Oswald, Roboto_Condensed } from 'next/font/google';
+import '../styles/tailwind.css';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700', '800'],
   variable: '--font-plus-jakarta-sans',
+  display: 'swap',
+});
+
+const oswald = Oswald({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-oswald',
+  display: 'swap',
+});
+
+const robotoCondensed = Roboto_Condensed({
+  subsets: ['latin'],
+  weight: ['400', '700'],
+  variable: '--font-roboto-condensed',
   display: 'swap',
 });
 
@@ -17,10 +31,16 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-  title: 'SuaraUtara — Suara Nyata Sumut di Tingkat Nasional',
-  description: 'Situs resmi SuaraUtara, calon Anggota DPD RI Dapil Sumatera Utara 2029. Menyuarakan aspirasi 33 Kabupaten/Kota untuk Sumut yang maju dan sejahtera.',
+  title: 'Maruba Sinaga - Caleg DPD Sumut 2029',
+  description: 'Situs resmi Maruba Sinaga, calon Anggota DPD RI Dapil Sumatera Utara 2029. Menyuarakan aspirasi 33 Kabupaten/Kota untuk Sumut yang maju dan sejahtera.',
+  manifest: '/manifest.json',
   icons: {
-    icon: [{ url: '/favicon.ico', type: 'image/x-icon' }],
+    icon: [
+      { url: '/favicon.ico', type: 'image/x-icon' },
+      { url: '/assets/images/app_logo.png', type: 'image/png' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/assets/images/app_logo.png',
   },
 };
 
@@ -28,7 +48,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="id" className={plusJakartaSans.variable}>
+    <html lang="id" className={`${plusJakartaSans.variable} ${oswald.variable} ${robotoCondensed.variable}`}>
       <body className={plusJakartaSans.className}>
         {children}
 

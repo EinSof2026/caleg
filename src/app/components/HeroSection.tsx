@@ -45,13 +45,27 @@ export default function HeroSection() {
       <div
         className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full pointer-events-none"
         style={{ background: 'radial-gradient(ellipse at top right, rgba(5,150,105,0.1) 0%, transparent 60%)', filter: 'blur(80px)' }} />
-      
 
       {/* Main content grid */}
       <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-2 gap-12 lg:gap-20 items-center py-28 lg:py-20">
 
         {/* Left: Text Content */}
-        <div className="space-y-8 text-center lg:text-left order-2 lg:order-1">
+        <div className="relative space-y-8 text-center lg:text-left order-2 lg:order-1">
+          {/* Background map layer anchored to text area */}
+          <div className="pointer-events-none absolute inset-0 -z-10 flex items-center justify-center overflow-hidden">
+            <AppImage
+              src="/assets/images/sumut-maps.png"
+              alt=""
+              width={775}
+              height={1280}
+              priority
+              className="w-[300px] sm:w-[360px] md:w-[420px] lg:w-[500px] xl:w-[540px] h-auto object-contain opacity-20 lg:opacity-25"
+              style={{
+                transform: 'translate(0%, 0%)',
+                filter: 'drop-shadow(0 0 16px rgba(16,185,129,0.12))',
+              }}
+            />
+          </div>
           {/* Live badge */}
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-emerald-mid/30 bg-emerald-mid/10">
             <span className="w-2 h-2 rounded-full bg-emerald-mid animate-pulse-dot" />
@@ -123,12 +137,32 @@ export default function HeroSection() {
         {/* Right: Photo with Material You treatment */}
         <div className="relative order-1 lg:order-2 flex justify-center">
           {/* Scan line overlay container */}
-          <div className="relative w-full max-w-sm lg:max-w-none">
+          <div className="relative w-full max-w-sm lg:max-w-none flex flex-col items-center">
+            {/* Logo DPD & Logo Sumut */}
+            <div className="relative flex items-center justify-center gap-12 mb-[70px] z-10">
+              <AppImage
+                src="/assets/images/logo-dpd.svg"
+                alt="Logo DPD RI"
+                width={232}
+                height={180}
+                unoptimized
+                className="h-36 w-auto object-contain drop-shadow-[0_4px_12px_rgba(5,150,105,0.25)]"
+              />
+              <AppImage
+                src="/assets/images/logo-sumut.png"
+                alt="Logo Sumatera Utara"
+                width={144}
+                height={180}
+                className="h-36 w-auto object-contain drop-shadow-[0_4px_12px_rgba(5,150,105,0.25)]"
+              />
+            </div>
+
+            {/* Photo + floating badges wrapper (badge mengikuti foto caleg) */}
+            <div className="relative w-full">
             {/* Decorative rounded blob behind photo */}
             <div
               className="absolute -inset-6 rounded-4xl opacity-60"
               style={{ background: 'linear-gradient(135deg, rgba(5,150,105,0.3) 0%, rgba(15,23,42,0.8) 100%)', filter: 'blur(20px)' }} />
-            
 
             {/* Photo container */}
             <div className="relative rounded-4xl overflow-hidden border border-emerald-mid/20 shadow-emerald-lg">
@@ -139,7 +173,7 @@ export default function HeroSection() {
               </div>
 
               <AppImage
-                src="https://img.rocket.new/generatedImages/rocket_gen_img_1928a315b-1773093144051.png"
+                src="/assets/images/caleg1.jpg"
                 alt="Portrait of a professional man in formal attire, warm indoor lighting, dark neutral background"
                 width={480}
                 height={600}
@@ -195,6 +229,7 @@ export default function HeroSection() {
                   <p className="text-[10px] text-muted-foreground">Pilihan Rakyat</p>
                 </div>
               </div>
+            </div>
             </div>
           </div>
         </div>
