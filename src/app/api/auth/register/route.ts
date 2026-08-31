@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabase';
-import { hashPassword, createSession, setSessionCookie } from '@/lib/auth';
+import { hashPassword, createSession } from '@/lib/auth';
+
+const SESSION_COOKIE = 'sb_session';
 
 interface RegisterBody {
   nama: string;
-  email: string;
+  username: string;
   password: string;
   usia: string;
   alamat: string;
@@ -18,15 +20,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Data tidak valid.' }, { status: 400 });
   }
 
-  const { nama, email, password, usia, alamat } = body;
+  const { nama, username, password, usia, alamat } = body;
 
   // ── Validasi ────────────────────────────────────────────────────
   if (!nama?.trim()) {
     return NextResponse.json({ error: 'Nama lengkap wajib diisi.' }, { status: 400 });
   }
-  const emailNorm = email?.trim().toLowerCase();
-  if (!emailNorm || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailNorm)) {
-    return NextResponse.json({ error: 'Email wajib diisi dengan alamat yang valid.' }, { status: 400 });
+  const usernameNorm = username?.trim().toLowerCase();
+  if (!usernameNorm || usernameNorm.length < 3) {
+    return NextResponse.json({ error: 'Username minimal 3 karakter.' }, { status: 400 });
+  }
+  if (!/^[a-z0-9_]+$/.test(usernameNorm)) {
+    return NextResponse.json({ error: 'Username hanya boleh huruf kecil, angka, dan underscore.' }, { status: 400 });
   }
   if (!password || password.length < 6) {
     return NextResponse.json({ error: 'Password minimal 6 karakter.' }, { status: 400 });
@@ -53,12 +58,12 @@ export async function POST(request: Request) {
   const { data: existing } = await supabase
     .from('users')
     .select('id')
-    .eq('email', emailNorm)
+    .eq('username', usernameNorm)
     .single();
 
   if (existing) {
     return NextResponse.json(
-      { error: 'Email sudah terdaftar. Silakan masuk.' },
+      { error: 'Username sudah terdaftar. Silakan pilih username lain.' },
       { status: 409 },
     );
   }
@@ -69,7 +74,7 @@ export async function POST(request: Request) {
   const { data: newUser, error: insertErr } = await supabase
     .from('users')
     .insert({
-      email: emailNorm,
+      username: usernameNorm,
       password_hash: passwordHash,
       nama: nama.trim(),
       usia: String(usiaNum),
@@ -89,12 +94,12 @@ export async function POST(request: Request) {
   // ── Simpan juga ke submissions agar admin bisa melihat ───────────
   await supabase.from('submissions').insert({
     jenis: 'daftar',
-    data: { nama: nama.trim(), email: emailNorm, usia: String(usiaNum), alamat: alamat.trim() },
+    data: { nama: nama.trim(), username: usernameNorm, usia: String(usiaNum), alamat: alamat.trim() },
   });
 
   // ── Buat sesi & set cookie ──────────────────────────────────────
   const token = await createSession(newUser.id);
-  const res = NextResponse.json({ ok: true, user: { email: emailNorm, nama: nama.trim() } });
+  const res = NextResponse.json({ ok: true, user: { username: usernameNorm, nama: nama.trim() } });
   // Set cookie on the response
   res.cookies.set(SESSION_COOKIE, token, {
     httpOnly: true,
@@ -106,5 +111,3 @@ export async function POST(request: Request) {
 
   return res;
 }
-
-const SESSION_COOKIE = 'sb_session';

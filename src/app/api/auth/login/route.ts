@@ -5,18 +5,18 @@ import { verifyPassword, createSession } from '@/lib/auth';
 const SESSION_COOKIE = 'sb_session';
 
 export async function POST(request: Request) {
-  let body: { email?: string; password?: string };
+  let body: { username?: string; password?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'Data tidak valid.' }, { status: 400 });
   }
 
-  const email = body.email?.trim().toLowerCase();
+  const username = body.username?.trim().toLowerCase();
   const password = body.password ?? '';
 
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json({ error: 'Email tidak valid.' }, { status: 400 });
+  if (!username) {
+    return NextResponse.json({ error: 'Username wajib diisi.' }, { status: 400 });
   }
   if (!password) {
     return NextResponse.json({ error: 'Password wajib diisi.' }, { status: 400 });
@@ -35,13 +35,13 @@ export async function POST(request: Request) {
 
   const { data: user, error: queryErr } = await supabase
     .from('users')
-    .select('id, email, nama, password_hash')
-    .eq('email', email)
+    .select('id, username, nama, password_hash')
+    .eq('username', username)
     .single();
 
   if (queryErr || !user) {
     return NextResponse.json(
-      { error: 'Email atau password salah.' },
+      { error: 'Username atau password salah.' },
       { status: 401 },
     );
   }
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
   const ok = await verifyPassword(password, user.password_hash);
   if (!ok) {
     return NextResponse.json(
-      { error: 'Email atau password salah.' },
+      { error: 'Username atau password salah.' },
       { status: 401 },
     );
   }
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
 
   const res = NextResponse.json({
     ok: true,
-    user: { email: user.email, nama: user.nama },
+    user: { username: user.username, nama: user.nama },
   });
 
   res.cookies.set(SESSION_COOKIE, token, {

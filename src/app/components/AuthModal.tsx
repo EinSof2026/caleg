@@ -9,26 +9,26 @@ type Mode = 'masuk' | 'daftar';
 type Variant = 'header' | 'menu';
 
 interface UserData {
-  email: string;
+  username: string;
   nama: string;
 }
 
 interface DaftarForm {
   nama: string;
-  email: string;
+  username: string;
   password: string;
   usia: string;
   alamat: string;
 }
 
-const initialDaftarForm: DaftarForm = { nama: '', email: '', password: '', usia: '', alamat: '' };
+const initialDaftarForm: DaftarForm = { nama: '', username: '', password: '', usia: '', alamat: '' };
 
 export default function AuthModal({ variant = 'header', onOpen }: { variant?: Variant; onOpen?: () => void }) {
   const [open, setOpen] = useState(false);
   const [user, setUser] = useState<UserData | null>(null);
   const [mode, setMode] = useState<Mode>('masuk');
   const [step, setStep] = useState<Step>('input');
-  const [loginEmail, setLoginEmail] = useState('');
+  const [loginUsername, setLoginUsername] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [daftarForm, setDaftarForm] = useState<DaftarForm>(initialDaftarForm);
   const [error, setError] = useState<string | null>(null);
@@ -47,7 +47,7 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
     if (!open) {
       setStep('input');
       setMode('masuk');
-      setLoginEmail('');
+      setLoginUsername('');
       setLoginPassword('');
       setDaftarForm(initialDaftarForm);
       setError(null);
@@ -69,9 +69,9 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
     setError(null);
     setNotice(null);
 
-    const email = loginEmail.trim().toLowerCase();
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Masukkan alamat email yang valid.'); return;
+    const uname = loginUsername.trim().toLowerCase();
+    if (!uname) {
+      setError('Username wajib diisi.'); return;
     }
     if (!loginPassword) {
       setError('Password wajib diisi.'); return;
@@ -82,7 +82,7 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password: loginPassword }),
+        body: JSON.stringify({ username: uname, password: loginPassword }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Login gagal.');
@@ -101,15 +101,14 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
     setNotice(null);
 
     const nama = daftarForm.nama.trim();
-    const email = daftarForm.email.trim().toLowerCase();
+    const uname = daftarForm.username.trim().toLowerCase();
     const password = daftarForm.password;
     const usia = daftarForm.usia.trim();
     const alamat = daftarForm.alamat.trim();
 
     if (!nama) { setError('Nama lengkap wajib diisi.'); return; }
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setError('Email wajib diisi dengan alamat yang valid.'); return;
-    }
+    if (!uname || uname.length < 3) { setError('Username minimal 3 karakter.'); return; }
+    if (!/^[a-z0-9_]+$/.test(uname)) { setError('Username hanya boleh huruf kecil, angka, dan underscore.'); return; }
     if (!password || password.length < 6) { setError('Password minimal 6 karakter.'); return; }
     const usiaNum = Number(usia);
     if (!usia || !Number.isInteger(usiaNum) || usiaNum < 1 || usiaNum > 120) {
@@ -122,7 +121,7 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nama, email, password, usia, alamat }),
+        body: JSON.stringify({ nama, username: uname, password, usia, alamat }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal mendaftar.');
@@ -164,10 +163,10 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
           className={isMenuVariant
             ? 'w-full flex items-center gap-2.5 px-5 py-4 rounded-2xl text-lg font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200'
             : 'hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold bg-white/10 text-white hover:bg-white/20 transition-all duration-200'}
-          title={user.email}
+          title={user.username}
         >
           <Icon name="UserCircleIcon" variant="solid" size={16} className="text-emerald-mid" />
-          <span className="max-w-[120px] truncate">{user.email}</span>
+          <span className="max-w-[120px] truncate">{user.nama || user.username}</span>
         </button>
       ) : (
         <button onClick={handleOpen} className={triggerClass}>
@@ -201,7 +200,7 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
                     <h3 className="text-lg font-extrabold text-foreground leading-tight">
                       {user ? 'Akun Anda' : mode === 'daftar' ? 'Daftar Akun' : 'Masuk'}
                     </h3>
-                    {user && <p className="text-xs text-muted-foreground mt-0.5">Sesi aktif via email &amp; password</p>}
+                    {user && <p className="text-xs text-muted-foreground mt-0.5">Sesi aktif via username &amp; password</p>}
                   </div>
                 </div>
               </div>
@@ -225,11 +224,11 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
                 <div className="space-y-4">
                   <div className="bg-surface-container rounded-2xl p-4 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center font-extrabold text-sm flex-shrink-0">
-                      {(user.nama?.[0] || user.email[0] || '?').toUpperCase()}
+                      {(user.nama?.[0] || user.username[0] || '?').toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-sm font-bold text-foreground truncate">{user.nama || user.email}</p>
-                      <p className="text-[11px] text-muted-foreground">{user.email}</p>
+                      <p className="text-sm font-bold text-foreground truncate">{user.nama || user.username}</p>
+                      <p className="text-[11px] text-muted-foreground">@{user.username}</p>
                     </div>
                   </div>
                   <button
@@ -258,23 +257,31 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
 
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-1.5">
-                      <label className="text-sm font-bold text-foreground">Email <span className="text-accent">*</span></label>
-                      <input type="email" autoComplete="email" value={daftarForm.email} onChange={updateDaftar('email')} placeholder="nama@email.com" className={inputClass} />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-bold text-foreground">Password <span className="text-accent">*</span></label>
-                      <input type="password" autoComplete="new-password" value={daftarForm.password} onChange={updateDaftar('password')} placeholder="Minimal 6 karakter" className={inputClass} />
-                    </div>
-                  </div>
-
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-1.5">
                       <label className="text-sm font-bold text-foreground">Usia <span className="text-accent">*</span></label>
                       <input type="number" inputMode="numeric" min={1} max={120} value={daftarForm.usia} onChange={updateDaftar('usia')} placeholder="Contoh: 35" className={inputClass} />
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-sm font-bold text-foreground">Alamat <span className="text-accent">*</span></label>
                       <textarea rows={2} value={daftarForm.alamat} onChange={updateDaftar('alamat')} placeholder="Alamat lengkap" className={`${inputClass} resize-none`} />
+                    </div>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-bold text-foreground">Username <span className="text-accent">*</span></label>
+                      <input
+                        type="text"
+                        autoComplete="username"
+                        value={daftarForm.username}
+                        onChange={updateDaftar('username')}
+                        placeholder="Huruf kecil, angka, _"
+                        className={inputClass}
+                      />
+                      <p className="text-[11px] text-muted-foreground">Min. 3 karakter. Hanya huruf kecil, angka, dan _</p>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-bold text-foreground">Password <span className="text-accent">*</span></label>
+                      <input type="password" autoComplete="new-password" value={daftarForm.password} onChange={updateDaftar('password')} placeholder="Minimal 6 karakter" className={inputClass} />
                     </div>
                   </div>
 
@@ -295,14 +302,14 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
               ) : (
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-sm font-bold text-foreground">Email</label>
+                    <label className="text-sm font-bold text-foreground">Username</label>
                     <input
-                      type="email"
-                      inputMode="email"
-                      autoComplete="email"
-                      value={loginEmail}
-                      onChange={(e) => setLoginEmail(e.target.value)}
-                      placeholder="nama@email.com"
+                      type="text"
+                      inputMode="text"
+                      autoComplete="username"
+                      value={loginUsername}
+                      onChange={(e) => setLoginUsername(e.target.value)}
+                      placeholder="Masukkan username"
                       autoFocus
                       className={inputClass}
                     />
@@ -322,7 +329,7 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
 
                   <button
                     type="submit"
-                    disabled={!loginEmail.trim() || !loginPassword}
+                    disabled={!loginUsername.trim() || !loginPassword}
                     className="btn-pill w-full bg-secondary text-white py-3.5 text-sm font-bold shadow-emerald-sm hover:bg-emerald-dark disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     <Icon name="ArrowRightOnRectangleIcon" variant="solid" size={16} className="text-white" />

@@ -36,7 +36,7 @@ export async function createSession(userId: number): Promise<string> {
 /** Validate a session token: returns the user row or null. */
 export async function validateSession(token: string | undefined): Promise<{
   id: number;
-  email: string;
+  username: string;
   nama: string;
   usia: string;
   alamat: string;
@@ -61,7 +61,7 @@ export async function validateSession(token: string | undefined): Promise<{
   // Fetch user
   const { data: user, error: userErr } = await supabase
     .from('users')
-    .select('id, email, nama, usia, alamat')
+    .select('id, username, nama, usia, alamat')
     .eq('id', data.user_id)
     .single();
 
