@@ -87,6 +87,7 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Login gagal.');
       setUser(data.user);
+      window.dispatchEvent(new Event('auth-changed'));
       setOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan.');
@@ -126,6 +127,7 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal mendaftar.');
       setUser(data.user);
+      window.dispatchEvent(new Event('auth-changed'));
       setOpen(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Terjadi kesalahan.');
@@ -137,6 +139,7 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST' }).catch(() => {});
     setUser(null);
+    window.dispatchEvent(new Event('auth-changed'));
   };
 
   // ── UI helpers ──────────────────────────────────────────────────

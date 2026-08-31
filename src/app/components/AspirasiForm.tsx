@@ -76,7 +76,7 @@ export default function AspirasiForm() {
   const [user, setUser] = useState<UserData | null>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
-  useEffect(() => {
+  const checkSession = () => {
     fetch('/api/auth/me')
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((d) => {
@@ -94,9 +94,18 @@ export default function AspirasiForm() {
             nama: nama || prev.nama,
             kabupaten: matchedKab || prev.kabupaten,
           }));
+        } else {
+          setUser(null);
         }
       })
       .catch(() => setUser(null));
+  };
+
+  useEffect(() => {
+    checkSession();
+    const handler = () => checkSession();
+    window.addEventListener('auth-changed', handler);
+    return () => window.removeEventListener('auth-changed', handler);
   }, []);
 
   const validateForm = (): boolean => {
