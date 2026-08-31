@@ -106,9 +106,9 @@ menjadi "AI Asisten Maruba Sinaga".
 
 | Key | Nilai | Status |
 |-----|-------|--------|
-| `GROQ_API_KEY` | `gsk_REDACTED` | ✅ Aktif |
+| `GROQ_API_KEY` | `gsk_***` | ✅ Aktif |
 | `GROQ_MODEL` | `qwen/qwen3.6-27b` | ✅ Gratis, 30 req/menit |
-| `TELEGRAM_BOT_TOKEN` | `8972606540:AAG6DI8H0ajYgLPGjaicwIsyAIMIG1z_O1E` | ✅ Bot: @marubasinaga_bot |
+| `TELEGRAM_BOT_TOKEN` | `***` | ✅ Bot: @marubasinaga_bot |
 | `SUPABASE_URL` | `https://kqifimsqvuyugjzersej.supabase.co` | ⚠️ Network issue dari sini |
 
 ### 6.6 Masalah yang belum terselesaikan
