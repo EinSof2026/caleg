@@ -74,6 +74,7 @@ export async function POST(request: Request) {
   const { data: newUser, error: insertErr } = await supabase
     .from('users')
     .insert({
+      email: `${usernameNorm}@placeholder.local`,
       username: usernameNorm,
       password_hash: passwordHash,
       nama: nama.trim(),
