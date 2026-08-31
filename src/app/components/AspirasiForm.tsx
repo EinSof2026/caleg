@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Icon from '@/components/ui/AppIcon';
 import SumutMap from '@/app/components/SumutMap';
 
@@ -75,6 +75,8 @@ export default function AspirasiForm() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [user, setUser] = useState<UserData | null>(null);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [showSuccessAnim, setShowSuccessAnim] = useState(false);
+  const successAnimTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const checkSession = () => {
     fetch('/api/auth/me')
@@ -144,7 +146,11 @@ export default function AspirasiForm() {
         const errBody = await res.json().catch(() => null);
         throw new Error(errBody?.error || 'Terjadi kesalahan saat mengirim data.');
       }
-      setSubmitted(true);
+      setShowSuccessAnim(true);
+      successAnimTimerRef.current = setTimeout(() => {
+        setShowSuccessAnim(false);
+        setSubmitted(true);
+      }, 2200);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Gagal mengirim data. Coba lagi nanti.');
     } finally {
@@ -152,8 +158,15 @@ export default function AspirasiForm() {
     }
   };
 
+  useEffect(() => {
+    return () => {
+      if (successAnimTimerRef.current) clearTimeout(successAnimTimerRef.current);
+    };
+  }, []);
+
   const handleReset = () => {
     setSubmitted(false);
+    setShowSuccessAnim(false);
     if (user) {
       const nama = user.nama || '';
       const matchedKab = user.alamat ? matchKabupaten(user.alamat) : '';
@@ -223,7 +236,42 @@ export default function AspirasiForm() {
           ))}
         </div>
 
-        <div className="bg-card border border-border rounded-3xl p-6 sm:p-10 shadow-navy-sm">
+        <div className="bg-card border border-border rounded-3xl p-6 sm:p-10 shadow-navy-sm relative overflow-hidden">
+          {showSuccessAnim && (
+            <div className="fixed inset-0 z-50 flex flex-col items-center justify-center">
+              {/* Backdrop blur only behind the circle */}
+              <div className="relative flex flex-col items-center justify-center">
+                {/* Glow ring outer */}
+                <div className="absolute w-[180px] h-[180px] rounded-full opacity-30" style={{ background: 'radial-gradient(circle, #10B981 0%, transparent 70%)', animation: 'successGlowPulse 1.2s ease-in-out infinite' }} />
+                {/* Circular frame with blur bg */}
+                <div className="relative w-[140px] h-[140px] rounded-full flex items-center justify-center" style={{ background: 'rgba(4, 120, 87, 0.15)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', border: '3px solid rgba(5, 150, 105, 0.4)', boxShadow: '0 0 40px rgba(5, 150, 105, 0.2)' }}>
+                  {/* Flowing ring animation (SVG circle draw) */}
+                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 140 140">
+                    <circle cx="70" cy="70" r="66" fill="none" stroke="url(#successRingGrad)" strokeWidth="3" strokeLinecap="round" strokeDasharray="415" strokeDashoffset="415" style={{ animation: 'successRingDraw 0.8s cubic-bezier(0.65, 0, 0.35, 1) 0.2s forwards' }} />
+                    <defs>
+                      <linearGradient id="successRingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stopColor="#047857" />
+                        <stop offset="50%" stopColor="#10B981" />
+                        <stop offset="100%" stopColor="#059669" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  {/* Checkmark SVG with draw animation */}
+                  <svg className="w-14 h-14 relative z-10" viewBox="0 0 56 56" fill="none">
+                    <path d="M14 28L24 38L42 18" stroke="url(#checkGrad)" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" strokeDasharray="50" strokeDashoffset="50" style={{ animation: 'successCheckDraw 0.5s cubic-bezier(0.65, 0, 0.35, 1) 0.7s forwards' }} />
+                    <defs>
+                      <linearGradient id="checkGrad" x1="14" y1="18" x2="42" y2="38">
+                        <stop offset="0%" stopColor="#047857" />
+                        <stop offset="100%" stopColor="#10B981" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+                {/* "Terkirim" text */}
+                <p className="mt-5 text-lg font-extrabold" style={{ color: '#047857', opacity: 0, animation: 'successTextFadeIn 0.4s ease-out 1.1s forwards' }}>Terkirim</p>
+              </div>
+            </div>
+          )}
           <div key={activeTab} className="animate-fade-in-up">
           {submitted ? (
             <div className="text-center py-12 space-y-6">
