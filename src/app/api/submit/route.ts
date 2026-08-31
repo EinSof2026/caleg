@@ -18,9 +18,17 @@ interface RelawanPayload {
   motivasi?: string;
 }
 
+interface DaftarPayload {
+  nama: string;
+  email: string;
+  usia: string;
+  alamat: string;
+}
+
 type SubmitBody =
   | { jenis: 'aspirasi'; data: AspirasiPayload }
-  | { jenis: 'relawan'; data: RelawanPayload };
+  | { jenis: 'relawan'; data: RelawanPayload }
+  | { jenis: 'daftar'; data: DaftarPayload };
 
 /**
  * Alur: browser -> /api/submit (server Next.js) -> tabel `submissions` di Supabase
@@ -36,16 +44,35 @@ export async function POST(request: Request) {
   }
 
   // 2. Validasi dasar
-  if (!body || (body.jenis !== 'aspirasi' && body.jenis !== 'relawan')) {
+  if (!body || (body.jenis !== 'aspirasi' && body.jenis !== 'relawan' && body.jenis !== 'daftar')) {
     return NextResponse.json({ error: 'Jenis pengiriman tidak dikenali.' }, { status: 400 });
   }
 
   const { jenis, data } = body;
-  if (!data || !data.nama || !data.whatsapp || !data.kabupaten) {
-    return NextResponse.json({ error: 'Data tidak lengkap. Nama, WhatsApp, dan Kabupaten/Kota wajib diisi.' }, { status: 400 });
+  if (!data || !data.nama) {
+    return NextResponse.json({ error: 'Nama wajib diisi.' }, { status: 400 });
   }
-  if (jenis === 'aspirasi' && (!(data as AspirasiPayload).kategori || !(data as AspirasiPayload).pesan)) {
-    return NextResponse.json({ error: 'Data aspirasi tidak lengkap. Kategori dan pesan wajib diisi.' }, { status: 400 });
+  if (jenis === 'aspirasi') {
+    const d = data as AspirasiPayload;
+    if (!d.whatsapp || !d.kabupaten) {
+      return NextResponse.json({ error: 'Data aspirasi tidak lengkap. WhatsApp dan Kabupaten/Kota wajib diisi.' }, { status: 400 });
+    }
+    if (!d.kategori || !d.pesan) {
+      return NextResponse.json({ error: 'Data aspirasi tidak lengkap. Kategori dan pesan wajib diisi.' }, { status: 400 });
+    }
+  } else if (jenis === 'relawan') {
+    const d = data as RelawanPayload;
+    if (!d.whatsapp || !d.kabupaten) {
+      return NextResponse.json({ error: 'Data relawan tidak lengkap. WhatsApp dan Kabupaten/Kota wajib diisi.' }, { status: 400 });
+    }
+  } else {
+    const d = data as DaftarPayload;
+    if (!d.email) {
+      return NextResponse.json({ error: 'Data pendaftaran tidak lengkap. Email wajib diisi.' }, { status: 400 });
+    }
+    if (!d.usia || !d.alamat) {
+      return NextResponse.json({ error: 'Data pendaftaran tidak lengkap. Usia dan alamat wajib diisi.' }, { status: 400 });
+    }
   }
 
   // 3. Simpan ke Supabase (tabel submissions)

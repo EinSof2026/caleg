@@ -6,12 +6,12 @@ import AppLogo from '@/components/ui/AppLogo';
 
 interface Submission {
   id: number;
-  jenis: 'aspirasi' | 'relawan';
+  jenis: 'aspirasi' | 'relawan' | 'daftar';
   data: Record<string, string>;
   created_at: string;
 }
 
-type Tab = 'semua' | 'aspirasi' | 'relawan';
+type Tab = 'semua' | 'aspirasi' | 'relawan' | 'daftar';
 
 function formatDate(iso: string): string {
   try {
@@ -47,6 +47,8 @@ export default function AdminPage() {
 
   const [tab, setTab] = useState<Tab>('semua');
   const [deleteBusy, setDeleteBusy] = useState<number | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<Submission | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     const res = await fetch('/api/admin/submissions');
@@ -56,8 +58,9 @@ export default function AdminPage() {
     }
     const json = await res.json().catch(() => null);
     if (!res.ok || !json) {
-      setLoadError(json?.error || 'Gagal membaca data dari server.');
-      setAuthed(false);
+      // Server error (500) — tetap tampilkan dashboard dengan pesan error
+      setLoadError(json?.error || 'Gagal membaca data dari server. Pastikan tabel submissions ada di Supabase.');
+      setAuthed(true);
       return;
     }
     setSubmissions(json.submissions || []);
@@ -98,23 +101,47 @@ export default function AdminPage() {
     setSubmissions([]);
   };
 
-  const handleDelete = async (id: number) => {
-    if (!window.confirm('Hapus data ini? Tindakan ini tidak bisa dibatalkan.')) return;
+  /** Buka modal konfirmasi hapus (bukan alert bawaan browser). */
+  const openDeleteConfirm = (sub: Submission) => {
+    setDeleteError(null);
+    setPendingDelete(sub);
+  };
+
+  const confirmDelete = async () => {
+    if (!pendingDelete) return;
+    const id = pendingDelete.id;
     setDeleteBusy(id);
+    setDeleteError(null);
     try {
       const res = await fetch(`/api/admin/submissions?id=${id}`, { method: 'DELETE' });
       if (!res.ok) {
         const json = await res.json().catch(() => null);
-        alert(json?.error || 'Gagal menghapus data.');
+        setDeleteError(json?.error || 'Gagal menghapus data.');
         return;
       }
       setSubmissions((prev) => prev.filter((s) => s.id !== id));
+      setPendingDelete(null);
     } catch {
-      alert('Gagal menghapus data. Coba lagi.');
+      setDeleteError('Gagal menghapus data. Coba lagi.');
     } finally {
       setDeleteBusy(null);
     }
   };
+
+  // Kunci scroll halaman & tutup dengan tombol Escape saat modal hapus terbuka
+  useEffect(() => {
+    if (!pendingDelete) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && deleteBusy === null) setPendingDelete(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [pendingDelete, deleteBusy]);
 
   // ----- Layar cek sesi (loading) -----
   if (authed === null) {
@@ -180,7 +207,7 @@ export default function AdminPage() {
             </form>
           </div>
           <p className="text-center text-xs text-muted-foreground mt-4">
-            Halaman ini khusus pemilik website SuaraUtara.
+            Halaman ini khusus pemilik website Maruba Sinaga.
           </p>
         </div>
       </div>
@@ -190,6 +217,7 @@ export default function AdminPage() {
   // ----- Dashboard -----
   const aspirasiCount = submissions.filter((s) => s.jenis === 'aspirasi').length;
   const relawanCount = submissions.filter((s) => s.jenis === 'relawan').length;
+  const daftarCount = submissions.filter((s) => s.jenis === 'daftar').length;
 
   const filtered =
     tab === 'semua' ? submissions : submissions.filter((s) => s.jenis === tab);
@@ -203,7 +231,7 @@ export default function AdminPage() {
             <AppLogo size={32} />
             <div className="flex flex-col leading-tight min-w-0">
               <span className="font-extrabold text-foreground text-sm tracking-tight truncate">Panel Admin</span>
-              <span className="text-[10px] font-medium text-emerald-mid uppercase tracking-wide">SuaraUtara</span>
+              <span className="text-[10px] font-medium text-emerald-mid uppercase tracking-wide">Maruba Sinaga</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -240,7 +268,7 @@ export default function AdminPage() {
         </div>
 
         {/* Statistik */}
-        <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-6">
           <div className="bg-card border border-border rounded-2xl p-4 text-center">
             <p className="text-2xl sm:text-3xl font-extrabold text-foreground">{submissions.length}</p>
             <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground mt-1">Total Masuk</p>
@@ -253,6 +281,10 @@ export default function AdminPage() {
             <p className="text-2xl sm:text-3xl font-extrabold text-primary">{relawanCount}</p>
             <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground mt-1">Relawan</p>
           </div>
+          <div className="bg-card border border-border rounded-2xl p-4 text-center">
+            <p className="text-2xl sm:text-3xl font-extrabold text-accent">{daftarCount}</p>
+            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground mt-1">Daftar Akun</p>
+          </div>
         </div>
 
         {loadError && (
@@ -264,7 +296,7 @@ export default function AdminPage() {
 
         {/* Tab filter */}
         <div className="flex rounded-2xl bg-card border border-border p-1.5 mb-6 max-w-md">
-          {(['semua', 'aspirasi', 'relawan'] as Tab[]).map((t) => (
+          {(['semua', 'aspirasi', 'relawan', 'daftar'] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -272,7 +304,7 @@ export default function AdminPage() {
                 tab === t ? 'bg-secondary text-white shadow-emerald-sm' : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {t === 'semua' ? `Semua (${submissions.length})` : t === 'aspirasi' ? `Aspirasi (${aspirasiCount})` : `Relawan (${relawanCount})`}
+              {t === 'semua' ? `Semua (${submissions.length})` : t === 'aspirasi' ? `Aspirasi (${aspirasiCount})` : t === 'relawan' ? `Relawan (${relawanCount})` : `Daftar (${daftarCount})`}
             </button>
           ))}
         </div>
@@ -286,10 +318,12 @@ export default function AdminPage() {
             <p className="font-bold text-foreground">Belum ada data</p>
             <p className="text-sm text-muted-foreground mt-1">
               {tab === 'semua'
-                ? 'Data aspirasi & relawan dari formulir website akan muncul di sini.'
+                ? 'Data aspirasi, relawan, & pendaftaran akun dari formulir website akan muncul di sini.'
                 : tab === 'aspirasi'
                   ? 'Belum ada aspirasi yang masuk.'
-                  : 'Belum ada relawan yang mendaftar.'}
+                  : tab === 'relawan'
+                    ? 'Belum ada relawan yang mendaftar.'
+                    : 'Belum ada pendaftaran akun.'}
             </p>
           </div>
         ) : (
@@ -297,6 +331,8 @@ export default function AdminPage() {
             {filtered.map((sub) => {
               const d = sub.data || {};
               const isAspirasi = sub.jenis === 'aspirasi';
+              const isRelawan = sub.jenis === 'relawan';
+              const isDaftar = sub.jenis === 'daftar';
               return (
                 <div key={sub.id} className="bg-card border border-border rounded-3xl p-5 sm:p-6 shadow-navy-sm">
                   {/* Baris atas: badge + tanggal + hapus */}
@@ -304,20 +340,20 @@ export default function AdminPage() {
                     <div className="flex items-center gap-2 flex-wrap">
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide ${
-                          isAspirasi ? 'bg-emerald-pale text-secondary' : 'bg-surface-container text-primary'
+                          isAspirasi ? 'bg-emerald-pale text-secondary' : isDaftar ? 'bg-red-light text-accent' : 'bg-surface-container text-primary'
                         }`}
                       >
                         <Icon
-                          name={isAspirasi ? 'ChatBubbleLeftRightIcon' : 'UserGroupIcon'}
+                          name={isAspirasi ? 'ChatBubbleLeftRightIcon' : isDaftar ? 'UserPlusIcon' : 'UserGroupIcon'}
                           variant="solid"
                           size={12}
                         />
-                        {isAspirasi ? 'Aspirasi' : 'Relawan'}
+                        {isAspirasi ? 'Aspirasi' : isDaftar ? 'Daftar Akun' : 'Relawan'}
                       </span>
                       <span className="text-xs text-muted-foreground">{formatDate(sub.created_at)}</span>
                     </div>
                     <button
-                      onClick={() => handleDelete(sub.id)}
+                      onClick={() => openDeleteConfirm(sub)}
                       disabled={deleteBusy === sub.id}
                       className="p-2 rounded-xl text-muted-foreground hover:text-accent hover:bg-red-light transition-colors disabled:opacity-50"
                       title="Hapus data"
@@ -337,24 +373,35 @@ export default function AdminPage() {
                       <p className="text-sm font-bold text-foreground mt-0.5 break-words">{d.nama || '-'}</p>
                     </div>
                     <div className="bg-surface-container rounded-2xl p-3">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">WhatsApp</p>
-                      <a
-                        href={d.whatsapp ? waLink(d.whatsapp) : '#'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-bold text-secondary mt-0.5 break-all hover:underline"
-                      >
-                        {d.whatsapp || '-'}
-                      </a>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{isDaftar ? 'Email' : 'WhatsApp'}</p>
+                      {isDaftar ? (
+                        <p className="text-sm font-bold text-secondary mt-0.5 break-all">{d.email || '-'}</p>
+                      ) : (
+                        <a
+                          href={d.whatsapp ? waLink(d.whatsapp) : '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-bold text-secondary mt-0.5 break-all hover:underline"
+                        >
+                          {d.whatsapp || '-'}
+                        </a>
+                      )}
                     </div>
                     <div className="bg-surface-container rounded-2xl p-3">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Kabupaten/Kota</p>
-                      <p className="text-sm font-bold text-foreground mt-0.5 break-words">{d.kabupaten || '-'}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{isDaftar ? 'Usia' : 'Kabupaten/Kota'}</p>
+                      <p className="text-sm font-bold text-foreground mt-0.5 break-words">{isDaftar ? (d.usia || '-') : (d.kabupaten || '-')}</p>
                     </div>
                   </div>
 
                   {/* Detail per jenis */}
-                  {isAspirasi ? (
+                  {isDaftar ? (
+                    <div className="space-y-3">
+                      <div className="bg-background border border-border rounded-2xl p-4">
+                        <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">Alamat</p>
+                        <p className="text-sm text-foreground leading-relaxed whitespace-pre-wrap">{d.alamat}</p>
+                      </div>
+                    </div>
+                  ) : isAspirasi ? (
                     <div className="space-y-3">
                       {d.kategori && (
                         <div className="flex items-center gap-2">
@@ -389,6 +436,65 @@ export default function AdminPage() {
           </div>
         )}
       </main>
+
+      {/* Modal konfirmasi hapus — pengganti alert bawaan browser */}
+      {pendingDelete && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+          style={{ background: 'rgba(15,23,42,0.6)', backdropFilter: 'blur(6px)' }}
+          onClick={() => {
+            if (deleteBusy === null) setPendingDelete(null);
+          }}
+        >
+          <div
+            className="w-full max-w-sm bg-card border border-border rounded-3xl p-6 sm:p-7 shadow-navy-md animate-fade-in-up"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div className="w-12 h-12 rounded-2xl bg-red-light flex items-center justify-center mx-auto mb-4">
+              <Icon name="ExclamationTriangleIcon" variant="solid" size={24} className="text-accent" />
+            </div>
+            <h3 className="text-lg font-extrabold text-foreground text-center leading-tight">Hapus data ini?</h3>
+            <p className="text-sm text-muted-foreground text-center mt-1.5 leading-relaxed">
+              Data <span className="font-semibold text-foreground break-all">{pendingDelete.data?.nama || `#${pendingDelete.id}`}</span>{' '}
+              akan dihapus permanen. Tindakan ini tidak bisa dibatalkan.
+            </p>
+            {deleteError && (
+              <div className="mt-4 bg-red-light border border-accent/40 rounded-2xl px-4 py-3 flex items-start gap-3">
+                <Icon name="ExclamationTriangleIcon" variant="solid" size={16} className="text-accent flex-shrink-0 mt-0.5" />
+                <p className="text-sm font-medium text-accent">{deleteError}</p>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-3 mt-6">
+              <button
+                onClick={() => setPendingDelete(null)}
+                disabled={deleteBusy !== null}
+                className="px-4 py-3 rounded-2xl text-sm font-bold border border-border text-muted-foreground hover:text-foreground hover:bg-surface-container transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Batal
+              </button>
+              <button
+                onClick={confirmDelete}
+                disabled={deleteBusy !== null}
+                className="px-4 py-3 rounded-2xl text-sm font-bold bg-accent text-white hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {deleteBusy === pendingDelete.id ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+                    Menghapus...
+                  </>
+                ) : (
+                  <>
+                    <Icon name="TrashIcon" variant="solid" size={14} />
+                    Ya, Hapus
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

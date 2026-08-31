@@ -20,7 +20,7 @@ export default function Footer() {
           <div className="flex items-center gap-2.5">
             <AppLogo size={28} />
             <span className="font-extrabold text-foreground text-sm tracking-tight">
-              SuaraUtara
+              Maruba Sinaga
             </span>
           </div>
 
@@ -39,7 +39,7 @@ export default function Footer() {
 
           {/* Copyright */}
           <p className="text-sm font-medium text-muted-foreground text-center sm:text-right">
-            © 2026 SuaraUtara · DPD RI Sumut
+            © 2026 Maruba Sinaga · DPD RI Sumut
           </p>
         </div>
       </div>

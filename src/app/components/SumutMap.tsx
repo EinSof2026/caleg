@@ -24,9 +24,11 @@ export default function SumutMap({ selected, onSelect, className = '' }: SumutMa
 
   return (
     <div className={`flex flex-col items-center gap-3 ${className}`}>
+      {/* Di layar sempit (mobile), peta dirender lebih besar & bisa digeser horizontal */}
+      <div className="w-full overflow-x-auto no-scrollbar">
       <svg
         viewBox={`0 0 ${width} ${height}`}
-        className="w-full h-auto select-none"
+        className="w-full min-w-[840px] sm:min-w-0 h-auto select-none"
         role="img"
         aria-label="Peta interaktif Kabupaten/Kota Sumatera Utara"
         style={{
@@ -125,6 +127,7 @@ export default function SumutMap({ selected, onSelect, className = '' }: SumutMa
           </text>
         )}
       </svg>
+      </div>
 
       {active && (
         <p className="text-xs font-bold text-emerald-dark">

@@ -189,7 +189,7 @@ export default function AspirasiForm() {
                   {activeTab === 'aspirasi' ? 'Aspirasi Terkirim!' : 'Pendaftaran Diterima!'}
                 </h3>
                 <p className="text-muted-foreground mt-2 leading-relaxed">
-                  {activeTab === 'aspirasi' ?'Terima kasih! Aspirasi Anda telah diteruskan ke tim kami.' :'Selamat bergabung sebagai relawan SuaraUtara! Tim koordinator akan menghubungi Anda untuk langkah selanjutnya.'}
+                  {activeTab === 'aspirasi' ?'Terima kasih! Aspirasi Anda telah diteruskan ke tim kami.' :'Selamat bergabung sebagai relawan Maruba Sinaga! Tim koordinator akan menghubungi Anda untuk langkah selanjutnya.'}
                 </p>
               </div>
               <div className="flex items-center justify-center gap-3 bg-emerald-pale rounded-2xl px-6 py-4">
@@ -277,7 +277,7 @@ export default function AspirasiForm() {
               <SumutMap
                 selected={formData.kabupaten}
                 onSelect={(name) => setFormData({ ...formData, kabupaten: name })}
-                className="w-[calc(100%+48px)] -mx-6 sm:w-[calc(100%+80px)] sm:-mx-10"
+                className="w-[calc(100%+80px)] -mx-10"
               />
 
               {/* Kategori */}
@@ -352,7 +352,7 @@ export default function AspirasiForm() {
               <div className="bg-emerald-pale border border-emerald-mid/20 rounded-2xl p-4 flex items-start gap-3">
                 <Icon name="InformationCircleIcon" variant="solid" size={18} className="text-secondary flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-secondary font-medium leading-relaxed">
-                  Bergabunglah sebagai relawan SuaraUtara dan jadilah bagian dari gerakan perubahan
+                  Bergabunglah sebagai relawan Maruba Sinaga dan jadilah bagian dari gerakan perubahan
                   nyata di Sumatera Utara. Tim koordinator akan menghubungi Anda.
                 </p>
               </div>
@@ -408,7 +408,7 @@ export default function AspirasiForm() {
               <SumutMap
                 selected={relawanData.kabupaten}
                 onSelect={(name) => setRelawanData({ ...relawanData, kabupaten: name })}
-                className="w-[calc(100%+48px)] -mx-6 sm:w-[calc(100%+80px)] sm:-mx-10"
+                className="w-[calc(100%+80px)] -mx-10"
               />
 
               <div className="space-y-1.5">

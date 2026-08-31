@@ -43,12 +43,12 @@ export default function Header() {
           <button
             onClick={() => handleNavClick('#hero')}
             className="flex items-center gap-2.5 group"
-            aria-label="SuaraUtara - Kembali ke atas"
+            aria-label="Maruba Sinaga - Kembali ke atas"
           >
             <AppLogo size={36} />
             <div className="flex flex-col">
               <span className="font-extrabold text-white text-base leading-tight tracking-tight">
-                SuaraUtara
+                Maruba Sinaga
               </span>
               <span className="text-[10px] font-medium text-emerald-mid leading-none tracking-wide uppercase">
                 DPD RI Sumut 2029
@@ -98,32 +98,37 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
-      {menuOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-navy-dark/95 backdrop-blur-xl flex flex-col pt-24 px-6 pb-8"
-          onClick={() => setMenuOpen(false)}
-        >
-          <nav className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
-            {navLinks.map((link, i) => (
-              <button
-                key={link.href}
-                onClick={() => handleNavClick(link.href)}
-                className="w-full text-left px-5 py-4 rounded-2xl text-lg font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200"
-                style={{ animationDelay: `${i * 60}ms` }}
-              >
-                {link.label}
-              </button>
-            ))}
+      {/* Mobile Menu Overlay — selalu dirender agar AuthModal (portal) tetap ter-mount;
+          menu ditampilkan/di-sembunyikan lewat kelas saat dibuka/ditutup */}
+      <div
+        className={`fixed inset-0 z-40 bg-navy-dark/95 backdrop-blur-xl flex flex-col pt-24 px-6 pb-8 transition-opacity duration-300 ${
+          menuOpen ? 'opacity-100' : 'opacity-0 invisible pointer-events-none'
+        }`}
+        onClick={() => setMenuOpen(false)}
+        aria-hidden={!menuOpen}
+      >
+        <nav className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
+          {navLinks.map((link, i) => (
             <button
-              onClick={() => handleNavClick('#aspirasi')}
-              className="mt-4 btn-pill bg-secondary text-secondary-foreground px-6 py-4 text-base font-bold shadow-emerald-md"
+              key={link.href}
+              onClick={() => handleNavClick(link.href)}
+              className="w-full text-left px-5 py-4 rounded-2xl text-lg font-semibold text-white/80 hover:text-white hover:bg-white/10 transition-all duration-200"
+              style={{ animationDelay: `${i * 60}ms` }}
             >
-              Titip Aspirasi Warga
+              {link.label}
             </button>
-          </nav>
-        </div>
-      )}
+          ))}
+          <div className="mt-2">
+            <AuthModal variant="menu" onOpen={() => setMenuOpen(false)} />
+          </div>
+          <button
+            onClick={() => handleNavClick('#aspirasi')}
+            className="mt-2 btn-pill bg-secondary text-secondary-foreground px-6 py-4 text-base font-bold shadow-emerald-md"
+          >
+            Titip Aspirasi Warga
+          </button>
+        </nav>
+      </div>
     </>
   );
 }

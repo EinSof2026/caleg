@@ -9,12 +9,12 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
  * bukan saat server dinyalakan.
  */
 export function getSupabaseAdmin(): SupabaseClient {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !serviceKey) {
     throw new Error(
-      'Pengaturan Supabase belum lengkap. Isi NEXT_PUBLIC_SUPABASE_URL dan SUPABASE_SERVICE_ROLE_KEY di .env.local (lihat PANDUAN-SUPABASE.md).'
+      'Pengaturan Supabase belum lengkap. Isi SUPABASE_URL dan SUPABASE_KEY di .env.local.'
     );
   }
 

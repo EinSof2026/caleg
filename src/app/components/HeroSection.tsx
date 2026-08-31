@@ -139,13 +139,14 @@ export default function HeroSection() {
           {/* Scan line overlay container */}
           <div className="relative w-full max-w-sm lg:max-w-none flex flex-col items-center">
             {/* Logo DPD & Logo Sumut */}
-            <div className="relative flex items-center justify-center gap-12 mb-[70px] z-10">
+            <div className="relative flex items-center justify-center gap-8 mb-[70px] z-10">
               <AppImage
                 src="/assets/images/logo-dpd.svg"
                 alt="Logo DPD RI"
                 width={232}
                 height={180}
                 unoptimized
+                priority
                 className="h-36 w-auto object-contain drop-shadow-[0_4px_12px_rgba(5,150,105,0.25)]"
               />
               <AppImage
@@ -153,6 +154,7 @@ export default function HeroSection() {
                 alt="Logo Sumatera Utara"
                 width={144}
                 height={180}
+                priority
                 className="h-36 w-auto object-contain drop-shadow-[0_4px_12px_rgba(5,150,105,0.25)]"
               />
             </div>

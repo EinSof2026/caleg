@@ -1,0 +1,19 @@
+
+> suarautara@0.1.0 dev
+> next dev -p 4028
+
+   ▲ Next.js 15.5.18
+   - Local:        http://localhost:4028
+   - Network:      http://192.168.56.1:4028
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ○ (pwa) PWA support is disabled.
+ ✓ Ready in 16.9s
+ ○ Compiling / ...
+ ✓ Compiled / in 3.1s (2010 modules)
+ GET / 200 in 5080ms
+ GET / 200 in 302ms
+ GET / 200 in 708ms
+ GET / 200 in 298ms
+[?25h
