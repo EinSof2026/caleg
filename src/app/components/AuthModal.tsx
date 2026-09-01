@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Icon from '@/components/ui/AppIcon';
+import EditProfileModal from './EditProfileModal';
 
 type Step = 'input' | 'loading';
 type Mode = 'masuk' | 'daftar';
@@ -11,6 +12,9 @@ type Variant = 'header' | 'menu';
 interface UserData {
   username: string;
   nama: string;
+  usia?: string;
+  alamat?: string;
+  foto_profil?: string | null;
 }
 
 interface DaftarForm {
@@ -33,6 +37,7 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
   const [daftarForm, setDaftarForm] = useState<DaftarForm>(initialDaftarForm);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
 
   // ── Cek sesi saat mount ─────────────────────────────────────────
   useEffect(() => {
@@ -156,6 +161,12 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
 
   const handleOpen = () => { setOpen(true); onOpen?.(); };
 
+  // Handle profile update from EditProfileModal
+  const handleProfileUpdate = (updatedUser: UserData) => {
+    setUser(updatedUser);
+    window.dispatchEvent(new Event('auth-changed'));
+  };
+
   // ════════════════════════════════════════════════════════════════
   return (
     <>
@@ -177,6 +188,14 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
           Masuk
         </button>
       )}
+
+      {/* ── Edit Profile Modal ──────────────────────────────────── */}
+      <EditProfileModal
+        open={editProfileOpen}
+        onClose={() => setEditProfileOpen(false)}
+        user={user || { username: '', nama: '' }}
+        onUpdate={handleProfileUpdate}
+      />
 
       {/* ── Modal ───────────────────────────────────────────────── */}
       {open && createPortal(
@@ -226,14 +245,25 @@ export default function AuthModal({ variant = 'header', onOpen }: { variant?: Va
               {user ? (
                 <div className="space-y-4">
                   <div className="bg-surface-container rounded-2xl p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-secondary text-white flex items-center justify-center font-extrabold text-sm flex-shrink-0">
-                      {(user.nama?.[0] || user.username[0] || '?').toUpperCase()}
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-secondary text-white flex items-center justify-center font-extrabold text-sm flex-shrink-0">
+                      {user.foto_profil ? (
+                        <img src={user.foto_profil} alt="Foto profil" className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{(user.nama?.[0] || user.username[0] || '?').toUpperCase()}</span>
+                      )}
                     </div>
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm font-bold text-foreground truncate">{user.nama || user.username}</p>
                       <p className="text-[11px] text-muted-foreground">@{user.username}</p>
                     </div>
                   </div>
+                  <button
+                    onClick={() => setEditProfileOpen(true)}
+                    className="btn-pill w-full bg-secondary text-white py-3.5 text-sm font-bold shadow-emerald-sm hover:bg-emerald-dark flex items-center justify-center gap-2"
+                  >
+                    <Icon name="PencilSquareIcon" variant="outline" size={16} className="text-white" />
+                    Edit Profil
+                  </button>
                   <button
                     onClick={handleLogout}
                     className="btn-pill w-full bg-primary text-primary-foreground py-3.5 text-sm font-bold hover:bg-navy-mid flex items-center justify-center gap-2"

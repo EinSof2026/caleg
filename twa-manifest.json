@@ -1,0 +1,31 @@
+{
+  "packageId": "com.marubasinaga.suarautara",
+  "host": "suarautara1702.builtwithrocket.new",
+  "name": "Maruba Sinaga",
+  "shortName": "Maruba Sinaga",
+  "startUrl": "/",
+  "themeColor": "#0f172a",
+  "themeColorDark": "#0f172a",
+  "backgroundColor": "#ffffff",
+  "iconUrl": "https://suarautara1702.builtwithrocket.new/android-chrome-512x512.png",
+  "maskableIconUrl": "https://suarautara1702.builtwithrocket.new/android-chrome-512x512.png",
+  "monochromeIconUrl": "https://suarautara1702.builtwithrocket.new/android-chrome-192x192.png",
+  "appVersion": "1.0.0",
+  "appVersionCode": 1,
+  "signingKey": {
+    "path": "suarautara-keystore.jks",
+    "alias": "suarautara",
+    "keyPassword": "suarautara2026",
+    "storePassword": "suarautara2026"
+  },
+  "splashScreenFadeOutDuration": 300,
+  "enableNotifications": false,
+  "display": "standalone",
+  "fallbackType": "customtabs",
+  "minSdkVersion": 21,
+  "targetSdkVersion": 34,
+  "additionalTrustedOrigins": [],
+  "isMetaQuest": false,
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://suarautara1702.builtwithrocket.new/manifest.json"
+}
